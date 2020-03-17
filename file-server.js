@@ -104,3 +104,7 @@ const mimeType = {
     '.jpg': 'image/jpeg',
     '.svg': 'image/svg+xml'
 };
+
+
+// handle requests for static resources
+app.use('/static', express.static('public'));
