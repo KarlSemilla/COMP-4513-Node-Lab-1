@@ -1,42 +1,24 @@
 /* Module for handling specific requests/routes for stock data */
 
-// node at this point doesn't support native JS fetch
-const fetch = require("node-fetch");
-
-// the lodash module has many powerful and helpful array functions
-const _ = require("lodash");
+const stockController = require("./stockController.js");
 
 // return just the requested stock
 const handleSingleSymbol = (stocks, app) => {
-  app.get("/stock/:symbol", (req, resp) => {
-    // change user supplied symbol to upper case
-    const symbolToFind = req.params.symbol.toUpperCase();
-    // search the array of objects for a match
-    const stock = stocks.filter(obj => symbolToFind === obj.symbol);
-    // return the matching stock
-    if (stock.length > 0) {
-      resp.json(stock);
-    } else {
-      resp.json(jsonMessage(`Symbol ${symbolToFind} not found`));
-    }
-  });
+  app
+    .route("/stock/:symbol")
+    .get((req, resp) => {
+      stockController.findSymbol(stocks, req, resp);
+    })
+    // if it is a PUT request then update specified stock
+    .put((req, resp) => {
+      stockController.updateSymbol(stocks, req, resp);
+    });
 };
 
 // return all the stocks whose name contains the supplied text
 const handleNameSearch = (stocks, app) => {
-  app.get("/stock/name/:substring", (req, resp) => {
-    // change user supplied substring to lower case
-    const substring = req.params.substring.toLowerCase();
-    // search the array of objects for a match
-    const matches = stocks.filter(obj =>
-      obj.name.toLowerCase().includes(substring)
-    );
-    // return the matching stocks
-    if (matches.length > 0) {
-      resp.json(matches);
-    } else {
-      resp.json(jsonMessage(`No symbol matches found for ${substring}`));
-    }
+  app.route("/stock/name/:substring").get((req, resp) => {
+    stockController.findName(stocks, req, resp);
   });
 };
 
@@ -51,17 +33,8 @@ async function retrievePriceData(symbol, resp) {
 
 // return daily price data
 const handlePriceData = (stocks, app) => {
-  app.get("/stock/daily/:symbol", (req, resp) => {
-    // change user supplied symbol to upper case
-    const symbolToFind = req.params.symbol.toUpperCase();
-    // search the array of objects for a match
-    const stock = stocks.filter(obj => symbolToFind === obj.symbol);
-    // now get the daily price data
-    if (stock.length > 0) {
-      retrievePriceData(symbolToFind, resp);
-    } else {
-      resp.json(jsonMessage(`Symbol ${symbolToFind} not found`));
-    }
+  app.route("/stock/daily/:symbol").get((req, resp) => {
+    stockController.findPrices(stocks, req, resp);
   });
 };
 
