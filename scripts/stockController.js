@@ -4,6 +4,11 @@ const fetch = require("node-fetch");
 // the lodash module has many powerful and helpful array functions
 const _ = require("lodash");
 
+// error messages need to be returned in JSON format
+const jsonMessage = msg => {
+  return { message: msg };
+};
+
 async function retrievePriceData(symbol, resp) {
   const url = `http://www.randyconnolly.com/funwebdev/3rd/api/stocks/history.php?symbol=${symbol}`;
   // retrieve the response then the json
@@ -39,6 +44,29 @@ const updateSymbol = (stocks, req, resp) => {
     resp.json(jsonMessage(`${symbolToUpd} updated`));
   }
 };
+
+const insertSymbol = (stocks, req, resp) => {
+  const symboltoIns = req.params.symbol.toUpperCase();
+  let index = _.findIndex(stocks, ["symbol", symboltoIns]);
+  if (index < 0) {
+    resp.json(jsonMessage(`${symboltoIns} not found`));
+  } else {
+    stocks[index] = stocks.push(req.body);
+    resp.json(jsonMessage(`${symboltoIns} has been added`));
+  }
+};
+
+const deleteSymbol = (stocks, req, resp) => {
+  const symbolToDel = req.params.symbol.toUpperCase();
+  let index = _.findIndex(stocks, ["symbol", symbolToDel]);
+  if (index < 0) {
+    resp.json(jsonMessage(`${symbolToDel} not found`));
+  } else {
+    const remove = _.remove(stocks, ["symbol", symbolToDel]);
+    resp.json(jsonMessage(`${symbolToDel} has been deleted`));
+  }
+};
+
 const findName = (stocks, req, resp) => {
   const substring = req.params.substring.toLowerCase();
   // search the array of objects for a match
@@ -68,5 +96,7 @@ module.exports = {
   findSymbol,
   updateSymbol,
   findName,
-  findPrices
+  findPrices,
+  insertSymbol,
+  deleteSymbol
 };
